@@ -1,0 +1,24 @@
+name: my_teleprompter
+description: Personal Bengali/English Voice-Tracking Teleprompter
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  speech_to_text: ^7.0.0
+  flutter_overlay_window: ^0.4.5
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  shared_preferences: ^2.3.2
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
