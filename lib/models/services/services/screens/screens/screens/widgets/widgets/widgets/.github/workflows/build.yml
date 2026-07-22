@@ -1,0 +1,60 @@
+name: Build Teleprompter APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get your code
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Scaffold a fresh Flutter project (creates android/ios folders)
+        run: flutter create --platforms=android app_build
+
+      - name: Copy your code into the scaffolded project
+        run: |
+          rm -rf app_build/lib
+          cp -r lib app_build/lib
+          cp pubspec.yaml app_build/pubspec.yaml
+
+      - name: Add required Android permissions
+        run: |
+          MANIFEST="app_build/android/app/src/main/AndroidManifest.xml"
+          PERMS='<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'
+          python3 -c "
+import re
+with open('$MANIFEST') as f:
+    content = f.read()
+perms = '''$PERMS'''
+content = content.replace('<application', perms + '\n<application', 1)
+with open('$MANIFEST', 'w') as f:
+    f.write(content)
+"
+
+      - name: Get dependencies
+        working-directory: app_build
+        run: flutter pub get
+
+      - name: Build release APK
+        working-directory: app_build
+        run: flutter build apk --release
+
+      - name: Upload APK (download it from this workflow run's page)
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-teleprompter-apk
+          path: app_build/build/app/outputs/flutter-apk/app-release.apk
